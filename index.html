@@ -5,63 +5,85 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Unsere Hochzeit</title>
   <style>
+    :root {
+      --mint-pastel: #cfe9d7;   /* pastelliger Hintergrund */
+      --mint-dark: #8ea08c;     /* kräftiger Akzent */
+      --rose-accent: #f4c2c2;   /* zartes Rosa */
+      --text-dark: #333333;     /* Standard Text */
+      --background-light: #f8f8f6; /* sehr helles Grundweiß */
+    }
+
     body {
       font-family: Arial, sans-serif;
       margin: 0;
-      background: #fafafa;
-      color: #333;
+      background: var(--background-light);
+      color: var(--text-dark);
       text-align: center;
     }
+
     header {
-      background: #d5a6bd;
+      background: var(--mint-dark);
       color: white;
       padding: 2rem 1rem;
     }
+
     h1 {
       margin: 0;
     }
+
     section {
       padding: 2rem 1rem;
       max-width: 800px;
       margin: auto;
+      background: var(--mint-pastel);
+      border-radius: 12px;
+      margin-top: 1.5rem;
     }
+
     footer {
-      background: #eee;
+      background: var(--mint-dark);
+      color: white;
       padding: 1rem;
       margin-top: 2rem;
       font-size: 0.9rem;
     }
+
     nav {
       margin: 1rem 0;
     }
+
     nav a {
       margin: 0 1rem;
       text-decoration: none;
-      color: #333;
+      color: white;
       font-weight: bold;
     }
+
     nav a:hover {
       text-decoration: underline;
     }
+
     a.button {
       display: inline-block;
       padding: 0.6rem 1.2rem;
-      background: #d5a6bd;
+      background: var(--mint-dark);
       color: white;
       border-radius: 6px;
       text-decoration: none;
       font-weight: bold;
       margin-top: 1rem;
+      transition: background 0.2s ease;
     }
+
     a.button:hover {
-      background: #c086a5;
+      background: var(--rose-accent);
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Wir heiraten!💒</h1>
-    <p>Morena & Tristan  👰‍♀️💍🤵🏻</p>
+    <h1>Wir heiraten! 💒</h1>
+    <p>Morena & Tristan 👰‍♀️💍🤵🏻</p>
     <nav>
       <a href="#details">Details</a>
       <a href="#location">Location</a>
@@ -79,8 +101,10 @@
   <section id="location">
     <h2>Location</h2>
     <p>La Cantina</p>
-    <p>Rothenbergstraße 4 · 37170 Uslar </p>
-    <p><a href="https://maps.app.goo.gl/8uafsX2eV26dPp9n7"> 📍 Google Maps</a></p>
+    <p>Rothenbergstraße 4 · 37170 Uslar</p>
+    <a class="button" href="https://maps.app.goo.gl/8uafsX2eV26dPp9n7" target="_blank">
+      📍 Zu Google Maps
+    </a>
   </section>
 
   <section id="zimmer">
