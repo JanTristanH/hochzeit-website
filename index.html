@@ -1,127 +1,125 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Unsere Hochzeit</title>
-  <style>
-    :root {
-      --mint-pastel: #cfe9d7;   /* pastelliger Hintergrund */
-      --mint-dark: #8ea08c;     /* kräftiger Akzent */
-      --rose-accent: #f4c2c2;   /* zartes Rosa */
-      --text-dark: #333333;     /* Standard Text */
-      --background-light: #f8f8f6; /* sehr helles Grundweiß */
-    }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hochzeit Morena & Tristan</title>
 
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background: var(--background-light);
-      color: var(--text-dark);
-      text-align: center;
-    }
+  <!-- Fonts: Serif (große Zahlen/Überschriften), Script (goldene Schrift), Sans (Fließtext) -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Cormorant+Garamond:wght@400;600&family=Great+Vibes&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
-    header {
-      background: var(--mint-dark);
-      color: white;
-      padding: 2rem 1rem;
-    }
+  <link rel="stylesheet" href="styles.css" />
 
-    h1 {
-      margin: 0;
-    }
-
-    section {
-      padding: 2rem 1rem;
-      max-width: 800px;
-      margin: auto;
-      background: var(--mint-pastel);
-      border-radius: 12px;
-      margin-top: 1.5rem;
-    }
-
-    footer {
-      background: var(--mint-dark);
-      color: white;
-      padding: 1rem;
-      margin-top: 2rem;
-      font-size: 0.9rem;
-    }
-
-    nav {
-      margin: 1rem 0;
-    }
-
-    nav a {
-      margin: 0 1rem;
-      text-decoration: none;
-      color: white;
-      font-weight: bold;
-    }
-
-    nav a:hover {
-      text-decoration: underline;
-    }
-
-    a.button {
-      display: inline-block;
-      padding: 0.6rem 1.2rem;
-      background: var(--mint-dark);
-      color: white;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: bold;
-      margin-top: 1rem;
-      transition: background 0.2s ease;
-    }
-
-    a.button:hover {
-      background: var(--rose-accent);
-    }
-  </style>
+  <!-- Meta / Share -->
+  <meta name="description" content="Wir heiraten am 19.09.2026 – alle Infos zu Tagesablauf, Anfahrt, Übernachtung und RSVP." />
+  <meta property="og:title" content="Morena & Tristan – 19·09·26" />
+  <meta property="og:description" content="Hochzeit – alle Infos & RSVP" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="assets/hero.jpeg" />
+  <link rel="icon" href="assets/favicon.png" />
 </head>
 <body>
-  <header>
-    <h1>Wir heiraten! 💒</h1>
-    <p>Morena & Tristan 👰‍♀️💍🤵🏻</p>
-    <nav>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Startseite">Morena & Tristan ~ 19.09.2026</a>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="primary-nav">Menü</button>
+    <nav id="primary-nav" class="nav">
       <a href="#details">Details</a>
+      <a href="#ablauf">Ablauf</a>
       <a href="#location">Location</a>
-      <a href="#zimmer">Zimmer buchen</a>
-      <a href="#rsvp">Antwort</a>
+      <a href="#hotel">Übernachtung</a>
+      <a href="#faq">FAQ</a>
+      <a class="btn btn--outline" href="#rsvp">RSVP</a>
     </nav>
   </header>
 
-  <section id="details">
-    <h2>Hochzeitsdetails</h2>
-    <p>Datum: 19.09.2026</p>
-    <p>Uhrzeit: noch offen</p>
+  <!-- HERO (angelehnt an die Karte: große Zahlen + Script) -->
+  <section id="top" class="hero">
+    <!-- Hintergrundbild später: assets/hero.jpeg -->
+    <div class="hero__overlay"></div>
+    <div class="hero__inner">
+      <p class="smallcaps">Mr. &amp; Mrs.</p>
+
+      <div class="date-stack" aria-label="19.09.2026">
+        <span class="num">19</span>
+        <span class="num">09</span>
+        <span class="num">26</span>
+      </div>
+
+      <p class="couple">Tristan &amp; Morena</p>
+      <a href="#rsvp" class="btn btn--primary">Ich bin dabei ✨</a>
+    </div>
   </section>
 
-  <section id="location">
-    <h2>Location</h2>
-    <p>La Cantina, Landhotel am Rothenberg</p>
-    <p>Rothenbergstraße 4 · 37170 Uslar</p>
-    <a class="button" href="https://maps.app.goo.gl/8uafsX2eV26dPp9n7" target="_blank">
-      📍 Zu Google Maps
-    </a>
-  </section>
+  <main>
+    <section id="details" class="card">
+      <h2>Details</h2>
+      <ul class="details">
+        <li><strong>Datum:</strong> 19.09.2026</li>
+        <li><strong>Ort:</strong> La Cantina · Landhotel am Rothenberg</li>
+        <li><strong>Adresse:</strong> Rothenbergstraße 4, 37170 Uslar</li>
+        <li><strong>Kleidung:</strong> Festlich, gerne sommerlich</li>
+      </ul>
+    </section>
 
-  <section id="zimmer">
-    <h2>Zimmer buchen</h2>
-    <p>Wir haben im <strong>Landhotel am Rothenberg</strong> ein Zimmerkontingent für euch reserviert.</p>
-    <a class="button" href="https://onepagebooking.com/landhotel-am-rothenberg/allotments/17148?allotmentcode=TriMo&lang=de" target="_blank">
-      Hier Zimmer buchen
-    </a>
-  </section>
+    <section id="ablauf" class="card">
+      <h2>Ablauf</h2>
+      <div class="timeline">
+        <div class="time"><span></span><p>Folgt...</p></div>
+      </div>
+    </section>
 
-  <section id="rsvp">
-    <h2>Antwort</h2>
-    <p>Bitte gebt uns Bescheid, sobald ihr wisst, ob ihr kommen könnt 😊</p>
-  </section>
+    <section id="location" class="card">
+      <h2>Location</h2>
+      <p>La Cantina · Landhotel am Rothenberg</p>
+      <p>Rothenbergstraße 4 · 37170 Uslar</p>
+      <div class="actions">
+        <a class="btn btn--primary" target="_blank" rel="noreferrer" href="https://maps.app.goo.gl/8uafsX2eV26dPp9n7">📍 Google&nbsp;Maps</a>
+        <a class="btn btn--ghost" href="#hotel">Übernachtung</a>
+      </div>
+    </section>
 
-  <footer>
-    <p>Mit ❤️ gemacht für unsere Hochzeit | © 2025</p>
+    <section id="hotel" class="card">
+      <h2>Übernachtung</h2>
+      <p>Für euch ist im <strong>Landhotel am Rothenberg</strong> ein Zimmerkontingent reserviert.</p>
+      <p>Buchungscode: <strong>TriMo</strong></p>
+      <div class="actions">
+        <a class="btn btn--outline" target="_blank" rel="noreferrer" href="https://onepagebooking.com/landhotel-am-rothenberg/allotments/17148?allotmentcode=TriMo&lang=de">Zimmer&nbsp;buchen</a>
+      </div>
+    </section>
+
+    <!--
+      <section id="faq" class="card">
+        <h2>FAQ</h2>
+        <details>
+          <summary>Gibt es Geschenkwünsche?</summary>
+          <p>Das größte Geschenk seid ihr! Wer mag, darf zu unserer Reisekasse beitragen ✨</p>
+        </details>
+        <details>
+          <summary>Bis wann sollen wir zusagen?</summary>
+          <p>Am liebsten bis <strong>30.06.2026</strong>, damit wir gut planen können.</p>
+        </details>
+        <details>
+          <summary>Kontakt</summary>
+          <p>Fragen? Schreibt uns gerne per Mail.</p>
+        </details>
+      </section>
+      -->
+
+    <section id="rsvp" class="card card--accent">
+      <h2>RSVP</h2>
+      <p>Ihr könnt uns einfach per WhatsApp zusagen. Bitte nennt auch Unverträglichkeiten/Allergien.</p>
+      <div class="actions">
+        <a class="btn btn--primary" href="https://wa.me/+491712729448">Per&nbsp;WhatsApp zusagen</a>
+      </div>
+      <p></p>
+      <div class="countdown" data-target="2026-09-19T14:00:00">Noch <span class="dd">—</span>T <span class="hh">—</span>Std <span class="mm">—</span>Min</div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>Mit ❤️ gemacht für unsere Hochzeit – 19·09·26</span>
   </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
