@@ -176,6 +176,7 @@ summary{ cursor: pointer; font-weight: 600; }
 .brand .date-revealed-with-maxblur.is-visible[data-index="0"] { transition-delay: 0s; }
 .brand .date-revealed-with-maxblur.is-visible[data-index="1"] { transition-delay: .15s; }
 .brand .date-revealed-with-maxblur.is-visible[data-index="2"] { transition-delay: .3s; }
+.brand .date-revealed-with-maxblur.is-visible[data-index="3"] { transition-delay: .35s; }
 
 /* Footer */
 .site-footer{

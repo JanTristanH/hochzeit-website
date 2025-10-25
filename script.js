@@ -46,7 +46,7 @@ if (toggle && nav) {
    Header height CSS variable
    =========================== */
 const header = document.querySelector('.site-header');
-function setHeaderVar(){
+function setHeaderVar() {
   if (!header) return;
   const h = header.getBoundingClientRect().height;
   document.documentElement.style.setProperty('--header-h', `${Math.round(h)}px`);
@@ -78,7 +78,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
    =========================== */
 let lastY = window.scrollY;
 let dirTick = false;
-function onScrollDir(){
+function onScrollDir() {
   const y = window.scrollY;
   const up = y < lastY;
   document.body.classList.toggle('scrolling-up', up);
@@ -86,7 +86,7 @@ function onScrollDir(){
   dirTick = false;
 }
 window.addEventListener('scroll', () => {
-  if (!dirTick){
+  if (!dirTick) {
     window.requestAnimationFrame(onScrollDir);
     dirTick = true;
   }
@@ -98,13 +98,13 @@ window.addEventListener('scroll', () => {
    =========================== */
 const hero = document.querySelector('.hero');
 
-if (hero){
+if (hero) {
   let heroTick = false;
 
   // Baseline scroll position at load; progress uses distance scrolled from here.
   let startY = Math.max(window.scrollY, 0);
 
-  function updateHeroEffects(){
+  function updateHeroEffects() {
     const rect = hero.getBoundingClientRect();
     const heroH = rect.height;
 
@@ -141,7 +141,7 @@ if (hero){
 
   // Scroll loop (rAF throttled)
   window.addEventListener('scroll', () => {
-    if (!heroTick){
+    if (!heroTick) {
       window.requestAnimationFrame(updateHeroEffects);
       heroTick = true;
     }
@@ -155,10 +155,10 @@ if (hero){
    Countdown
    =========================== */
 const cd = document.querySelector('.countdown');
-if (cd && cd.dataset.target){
+if (cd && cd.dataset.target) {
   const target = new Date(cd.dataset.target).getTime();
   const MIN = 60 * 1000;
-  const HR  = 60 * MIN;
+  const HR = 60 * MIN;
   const DAY = 24 * HR;
 
   const tick = () => {
@@ -178,3 +178,39 @@ if (cd && cd.dataset.target){
   tick();
   setInterval(tick, 30 * 1000);
 }
+
+
+
+// Intersection observers for header date reveal
+const heroNums = hero.querySelectorAll('.num');
+const headerDateParts = document.querySelectorAll('.date-revealed-with-maxblur');
+
+heroNums.forEach((num, index) => {
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+
+      headerDateParts.forEach((part, partIndex) => {
+        // Index mapping rules:
+        //  - Hero index 0 affects header parts 0 and 1
+        //  - Hero index i >= 1 affects header part (i + 1)
+        const match =
+          (index === 0 && (partIndex === 0 || partIndex === 1)) ||
+          (index >= 1 && partIndex === index + 1);
+
+        if (match) {
+          if (!entry.isIntersecting) {
+            part.classList.add('is-visible');
+          } else {
+            part.classList.remove('is-visible');
+          }
+        }
+      });
+
+    });
+  }, {
+    threshold: 0.075,
+    rootMargin: '-10% 0px -10% 0px'
+  });
+
+  io.observe(num);
+});
