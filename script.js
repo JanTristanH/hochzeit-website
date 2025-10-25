@@ -59,18 +59,65 @@ window.addEventListener('resize', setHeaderVar); // keep CSS var fresh
    Smooth in-page scrolling
    (offset by sticky header)
    =========================== */
+/* ===========================
+   Smooth in-page scrolling + proper hash updates
+   (works with sticky header, deep links, back/forward)
+   =========================== */
+function getHeaderH() {
+  return header ? header.getBoundingClientRect().height : 0;
+}
+
+function scrollToTargetId(id, addToHistory = true) {
+  const el = document.querySelector(id);
+  if (!el) return;
+
+  // Update URL first (no jump because we prevent default)
+  if (addToHistory) {
+    history.pushState(null, "", id); // adds to history without triggering hashchange
+  }
+
+  const y = el.getBoundingClientRect().top + window.scrollY - getHeaderH() - 12;
+  window.scrollTo({ top: y, behavior: "smooth" });
+}
+
+function scrollToHash(addToHistory = false) {
+  const hash = window.location.hash;
+  if (!hash) return;
+  // Don’t re-add the same hash to history
+  scrollToTargetId(hash, addToHistory);
+}
+
+// Click handler for in-page anchors
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
     const id = a.getAttribute('href');
     if (!id || id === '#') return;
-    const el = document.querySelector(id);
-    if (!el) return;
+    if (!document.querySelector(id)) return;
+
     e.preventDefault();
-    const headerH = header ? header.getBoundingClientRect().height : 0;
-    const y = el.getBoundingClientRect().top + window.scrollY - headerH - 12;
-    window.scrollTo({ top: y, behavior: 'smooth' });
+    scrollToTargetId(id, true);
   });
 });
+
+// Handle initial load with hash (after layout settles)
+window.addEventListener('load', () => {
+  if (location.hash) {
+    // Allow header var/fonts to settle first
+    requestAnimationFrame(() => scrollToHash(false));
+  }
+});
+
+// Handle user changing hash manually (or links without our handler)
+window.addEventListener('hashchange', () => {
+  // hashchange fires only when location.hash is set directly
+  scrollToHash(false);
+});
+
+// Handle back/forward navigation when we used pushState
+window.addEventListener('popstate', () => {
+  scrollToHash(false);
+});
+
 
 /* ===========================
    Scroll direction flag
