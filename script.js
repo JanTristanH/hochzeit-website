@@ -15,6 +15,21 @@ if (toggle && nav) {
   }));
 }
 
+// Close mobile menu when tapping/clicking outside
+document.addEventListener('click', (e) => {
+  if (!nav || !toggle) return;
+
+  const isOpen = nav.getAttribute('data-open') === 'true';
+  const clickedInsideNav = nav.contains(e.target);
+  const clickedToggle = toggle.contains(e.target);
+
+  if (isOpen && !clickedInsideNav && !clickedToggle) {
+    nav.setAttribute('data-open', 'false');
+    toggle.setAttribute('aria-expanded', 'false');
+  }
+});
+
+
 /* Header height CSS variable for offsets */
 const header = document.querySelector('.site-header');
 function setHeaderVar(){
