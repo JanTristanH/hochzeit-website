@@ -217,11 +217,11 @@ summary{ cursor: pointer; font-weight: 600; }
   animation: ring-angle-rotate 14s linear infinite;
 }
 
-/* Softer outer glow matching the warm palette */
+/* Outer-only glow with natural fade (no bleed inside) */
 .btn--ring::after {
   content: "";
   position: absolute;
-  inset: -4px; /* closer to the border */
+  inset: -12px; /* how far the glow can bloom outward */
   border-radius: 999px;
   background: conic-gradient(
     from var(--ring-angle),
@@ -231,10 +231,18 @@ summary{ cursor: pointer; font-weight: 600; }
     #c9958a,
     #e7c26a
   );
-  filter: blur(24px); /* spread */
-  opacity: 0.3;     /* glow intensity */
+
+  /* Mask: full area minus the inner pill → zero interior glow */
+  -webkit-mask: linear-gradient(#000 0 0), linear-gradient(#000 0 0) content-box;
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0), linear-gradient(#000 0 0) content-box;
+          mask-composite: exclude;
+
+  filter: blur(12px); /* softer outer fade; adjust with inset */
+  opacity: 0.35;      /* glow intensity */
   animation: ring-angle-rotate 10s linear infinite;
   z-index: -2;
+  pointer-events: none; /* avoid oversized hit area */
 }
 
 @keyframes ring-angle-rotate {
