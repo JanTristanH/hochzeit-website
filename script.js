@@ -73,6 +73,27 @@ if (hero){
     document.documentElement.style.setProperty('--hero-blur', blur);
     heroTick = false;
   }
+
+  const headerDateSpan = document.querySelector('.date-revealed-with-maxblur');
+  const lastNum = document.querySelector('#hero-date .num:last-child');
+
+  if (headerDateSpan && lastNum) {
+    const ioDate = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        // When "26" leaves the viewport, show the header date
+        if (!entry.isIntersecting) {
+          headerDateSpan.classList.add('is-visible');
+        } else {
+          headerDateSpan.classList.remove('is-visible');
+        }
+      });
+    }, {
+      threshold: 0.05, // trigger when ~5% visible
+    });
+
+    ioDate.observe(lastNum);
+  }
+
   window.addEventListener('scroll', () => {
     if (!heroTick){
       window.requestAnimationFrame(updateHeroBlur);

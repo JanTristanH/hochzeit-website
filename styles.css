@@ -151,3 +151,17 @@ summary{ cursor: pointer; font-weight: 600; }
 .site-footer{
   text-align: center; padding: 2rem 1rem; color: var(--muted);
 }
+
+/* header date is hidden until the hero blur reaches max */
+.brand .date-revealed-with-maxblur{
+  opacity: 0;
+  filter: blur(2px);
+  transition: opacity .28s ease, filter .28s ease;
+  margin-left: .5ch; /* small spacing before the date */
+}
+
+/* becomes visible when JS toggles this */
+.brand .date-revealed-with-maxblur.is-visible{
+  opacity: 1;
+  filter: none;
+}
