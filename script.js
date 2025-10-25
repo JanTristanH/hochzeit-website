@@ -1,36 +1,50 @@
-/* Mobile-Navigation */
+/* ===========================
+   Mobile Navigation
+   =========================== */
 const toggle = document.querySelector('.nav-toggle');
 const nav = document.getElementById('primary-nav');
 
 if (toggle && nav) {
+  // Toggle open/close
   toggle.addEventListener('click', () => {
     const isOpen = nav.getAttribute('data-open') === 'true';
     nav.setAttribute('data-open', String(!isOpen));
     toggle.setAttribute('aria-expanded', String(!isOpen));
   });
-  // Close menu on link click (mobile)
-  nav.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', () => {
-    nav.setAttribute('data-open', 'false');
-    toggle.setAttribute('aria-expanded', 'false');
-  }));
+
+  // Close menu on in-page link click (mobile)
+  nav.querySelectorAll('a[href^="#"]').forEach(a =>
+    a.addEventListener('click', () => {
+      nav.setAttribute('data-open', 'false');
+      toggle.setAttribute('aria-expanded', 'false');
+    })
+  );
+
+  // Close on outside click/tap
+  document.addEventListener('click', (e) => {
+    const isOpen = nav.getAttribute('data-open') === 'true';
+    if (!isOpen) return;
+    const clickedInsideNav = nav.contains(e.target);
+    const clickedToggle = toggle.contains(e.target);
+    if (!clickedInsideNav && !clickedToggle) {
+      nav.setAttribute('data-open', 'false');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && nav.getAttribute('data-open') === 'true') {
+      nav.setAttribute('data-open', 'false');
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.focus();
+    }
+  });
 }
 
-// Close mobile menu when tapping/clicking outside
-document.addEventListener('click', (e) => {
-  if (!nav || !toggle) return;
-
-  const isOpen = nav.getAttribute('data-open') === 'true';
-  const clickedInsideNav = nav.contains(e.target);
-  const clickedToggle = toggle.contains(e.target);
-
-  if (isOpen && !clickedInsideNav && !clickedToggle) {
-    nav.setAttribute('data-open', 'false');
-    toggle.setAttribute('aria-expanded', 'false');
-  }
-});
-
-
-/* Header height CSS variable for offsets */
+/* ===========================
+   Header height CSS variable
+   =========================== */
 const header = document.querySelector('.site-header');
 function setHeaderVar(){
   if (!header) return;
@@ -40,7 +54,10 @@ function setHeaderVar(){
 setHeaderVar();
 window.addEventListener('resize', setHeaderVar);
 
-/* Smooth scrolling with header offset (prevents sections being hidden) */
+/* ===========================
+   Smooth in-page scrolling
+   (offset by sticky header)
+   =========================== */
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
     const id = a.getAttribute('href');
@@ -54,63 +71,71 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
-/* Blur background when scrolling UP */
+/* ===========================
+   Scroll direction flag
+   (for optional styling)
+   =========================== */
 let lastY = window.scrollY;
-let ticking = false;
+let dirTick = false;
 function onScrollDir(){
   const y = window.scrollY;
   const up = y < lastY;
   document.body.classList.toggle('scrolling-up', up);
   lastY = y;
-  ticking = false;
+  dirTick = false;
 }
 window.addEventListener('scroll', () => {
-  if (!ticking){
+  if (!dirTick){
     window.requestAnimationFrame(onScrollDir);
-    ticking = true;
+    dirTick = true;
   }
 }, { passive: true });
 
-/* Hero effects: blur and parallax while scrolling
-   - updates CSS variables for blur and parallax transforms
-   - uses requestAnimationFrame for performance
-*/
+/* ===========================
+   Hero: Blur + Parallax
+   (start on first pixel)
+   =========================== */
 const hero = document.querySelector('.hero');
+
 if (hero){
   let heroTick = false;
+
+  // Remember the hero's initial top so progress grows immediately on scroll,
+  // regardless of sticky header or hero starting offset.
+  let heroTopAtLoad = hero.getBoundingClientRect().top;
+
   function updateHeroEffects(){
     const rect = hero.getBoundingClientRect();
     const heroH = rect.height;
 
-    // 0..1 progress based on how far the hero has moved past the top
-    const progress = Math.min(Math.max(0, -rect.top / heroH), 1);
+    // Distance the hero moved since load (px). >0 as soon as you scroll 1px.
+    const delta = heroTopAtLoad - rect.top;
 
-    // ---- Blur: start immediately on first pixel of scroll ----
-    const maxBlur = 12;           // your original cap
-    const minBlurOnScroll = 1.2;  // tiny blur as soon as scroll begins
+    // 0..1 progress based on delta, not viewport top.
+    const progress = Math.min(Math.max(delta / heroH, 0), 1);
 
-    // front-load the ramp a bit so it feels snappier at the beginning
-    const eased = Math.pow(progress, 0.75); // 0.75 -> faster early ramp (1 = linear)
+    // ---- Blur: starts immediately with a tiny base ----
+    const maxBlur = 12;
+    const minBlurOnScroll = 1.2;      // small initial blur once scrolling begins
+    const eased = Math.pow(progress, 0.75); // front-loaded ramp
+    const hasScrolled = delta > 0;
 
-    // Detect "has started scrolling" (down from top)
-    const hasScrolled = window.scrollY > 0 || rect.top < 0;
-
-    // If not scrolled -> 0px; if scrolled -> start at minBlurOnScroll and ramp to max
     const blurValue = hasScrolled
       ? (minBlurOnScroll + eased * (maxBlur - minBlurOnScroll))
       : 0;
 
-    // ---- Parallax offsets (unchanged) ----
-    const bgOffset = 0.30 * heroH * progress;   // + down
-    const fgOffset = -0.15 * heroH * progress;  // - up
+    // ---- Parallax (now also starts on first pixel) ----
+    // Background moves down slowly, foreground (entire hero content) moves up slightly.
+    const bgOffset = 0.30 * heroH * eased;   // +
+    const fgOffset = -0.15 * heroH * eased;  // -
 
-    // Reduced motion respect
+    // Reduced motion
     const prefersReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const blurPx = prefersReduce ? 0 : blurValue;
     const bg = prefersReduce ? 0 : bgOffset;
     const fg = prefersReduce ? 0 : fgOffset;
-    const blurPx = prefersReduce ? 0 : blurValue;
 
-    // Apply
+    // Apply CSS variables
     document.documentElement.style.setProperty('--hero-blur', `${blurPx.toFixed(2)}px`);
     document.documentElement.style.setProperty('--parallax-bg', `${bg}px`);
     document.documentElement.style.setProperty('--parallax-fg', `${fg}px`);
@@ -118,17 +143,21 @@ if (hero){
     heroTick = false;
   }
 
+  // Recalculate starting top on layout changes (e.g., fonts, header size).
+  const recalcStart = () => {
+    heroTopAtLoad = hero.getBoundingClientRect().top;
+    updateHeroEffects();
+  };
+  window.addEventListener('resize', recalcStart);
+  window.addEventListener('load', recalcStart);
 
-  // Setup intersection observers for each number in the hero
+  // Intersection observers for header date reveal
   const heroNums = hero.querySelectorAll('.num');
   const headerDateParts = document.querySelectorAll('.date-revealed-with-maxblur');
 
-  // Create observers for each number in the hero
   heroNums.forEach((num, index) => {
-    // Each number reveals its corresponding group in the header (by data-index)
     const io = new IntersectionObserver(entries => {
       entries.forEach(entry => {
-        // Find all parts with matching index
         headerDateParts.forEach(part => {
           if (part.dataset.index === String(index)) {
             if (!entry.isIntersecting) {
@@ -140,43 +169,49 @@ if (hero){
         });
       });
     }, {
-      threshold: 0.075, // trigger when 15% visible
-      rootMargin: '-10% 0px -10% 0px' // slightly tighter observation window
+      threshold: 0.075,            // ~7.5% visible triggers
+      rootMargin: '-10% 0px -10% 0px'
     });
 
     io.observe(num);
   });
 
+  // Scroll loop (rAF throttled)
   window.addEventListener('scroll', () => {
     if (!heroTick){
       window.requestAnimationFrame(updateHeroEffects);
       heroTick = true;
     }
   }, { passive: true });
-  // update on load/resize so initial state is correct
-  window.addEventListener('resize', () => {
-    updateHeroEffects();
-  });
+
+  // Initial state
   updateHeroEffects();
 }
 
-/* Countdown */
+/* ===========================
+   Countdown
+   =========================== */
 const cd = document.querySelector('.countdown');
 if (cd && cd.dataset.target){
   const target = new Date(cd.dataset.target).getTime();
-  const min = 60 * 1000;
-  const hr = 60 * min;
-  const day = 24 * hr;
+  const MIN = 60 * 1000;
+  const HR  = 60 * MIN;
+  const DAY = 24 * HR;
+
   const tick = () => {
     const now = Date.now();
     let diff = Math.max(0, target - now);
-    const d = Math.floor(diff / day);
-    const h = Math.floor((diff % day) / hr);
-    const m = Math.floor((diff % hr) / min);
-    cd.querySelector('.dd').textContent = d.toString().padStart(2, '0');
-    cd.querySelector('.hh').textContent = h.toString().padStart(2, '0');
-    cd.querySelector('.mm').textContent = m.toString().padStart(2, '0');
+    const d = Math.floor(diff / DAY);
+    const h = Math.floor((diff % DAY) / HR);
+    const m = Math.floor((diff % HR) / MIN);
+    const dd = cd.querySelector('.dd');
+    const hh = cd.querySelector('.hh');
+    const mm = cd.querySelector('.mm');
+    if (dd) dd.textContent = d.toString().padStart(2, '0');
+    if (hh) hh.textContent = h.toString().padStart(2, '0');
+    if (mm) mm.textContent = m.toString().padStart(2, '0');
   };
+
   tick();
   setInterval(tick, 30 * 1000);
 }
