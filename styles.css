@@ -159,7 +159,7 @@ summary{ cursor: pointer; font-weight: 600; }
 .brand .date-revealed-with-maxblur {
   opacity: 0;
   filter: blur(2px);
-  transition: opacity .28s ease, filter .28s ease;
+  transition: opacity .28s ease 0s, filter .28s ease 0s; /* No delay on fade-out */
   display: inline-block;
 }
 
@@ -169,12 +169,10 @@ summary{ cursor: pointer; font-weight: 600; }
   filter: none;
 }
 
-/* timing offset for each group */
-.brand .date-revealed-with-maxblur[data-index="0"] { transition-delay: 0s; }
-.brand .date-revealed-with-maxblur[data-index="1"] { transition-delay: .15s; }
-.brand .date-revealed-with-maxblur[data-index="2"] { transition-delay: .3s; }
-.brand .date-revealed-with-maxblur[data-index="3"] { transition-delay: .45s; }
-.brand .date-revealed-with-maxblur[data-index="4"] { transition-delay: .6s; }
+/* timing offset only for fade-in */
+.brand .date-revealed-with-maxblur.is-visible[data-index="0"] { transition-delay: 0s; }
+.brand .date-revealed-with-maxblur.is-visible[data-index="1"] { transition-delay: .15s; }
+.brand .date-revealed-with-maxblur.is-visible[data-index="2"] { transition-delay: .3s; }
 
 /* Footer */
 .site-footer{
