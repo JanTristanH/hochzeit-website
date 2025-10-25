@@ -6,6 +6,8 @@
   --gold: #e7c26a;       /* Skript-Akzent wie auf der Karte */
   --paper: #ffffff;
   --shadow: 0 10px 30px rgba(0,0,0,.08);
+  /* blur amount for hero background (updated by JS) */
+  --hero-blur: 0px;
 }
 
 * { box-sizing: border-box; }
@@ -59,16 +61,29 @@ body {
 
 /* Hero mit Zahlensatz & Skript */
 .hero{
-  position: relative; min-height: 90svh;
-  background: #111 url("assets/hero.jpeg") center/cover no-repeat; /* Bild später ersetzen */
+  position: relative; min-height: 90svh; overflow: hidden;
+  /* background image is rendered in the ::before pseudo-element so we can
+     apply a filter/blur independently from the overlay and content. */
   color: var(--paper);
   display: grid; place-items: center; text-align: center;
 }
+
+/* background layer for hero image; blur is controlled via --hero-blur */
+.hero::before{
+  content: "";
+  position: absolute; inset: 0; z-index: 0;
+  background: #111 url("assets/hero.jpeg") center/cover no-repeat;
+  filter: blur(var(--hero-blur));
+  transform: scale(1.04); /* avoid visible edges when blur increases */
+  will-change: filter, transform;
+}
+
 .hero__overlay{
-  position: absolute; inset: 0;
+  position: absolute; inset: 0; z-index: 1;
   background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.25));
 }
-.hero__inner{ position: relative; z-index: 1; padding: 2rem; }
+
+.hero__inner{ position: relative; z-index: 2; padding: 2rem; }
 .smallcaps{
   font-family: "Cormorant Garamond", serif;
   letter-spacing: .3em; text-transform: uppercase; opacity: .9;

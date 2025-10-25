@@ -8,50 +8,118 @@ if (toggle && nav) {
     nav.setAttribute('data-open', String(!isOpen));
     toggle.setAttribute('aria-expanded', String(!isOpen));
   });
+  // Close menu on link click (mobile)
+  nav.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', () => {
+    nav.setAttribute('data-open', 'false');
+    toggle.setAttribute('aria-expanded', 'false');
+  }));
 }
 
-/* Smooth Scrolling (für interne Links) */
+/* Header height CSS variable for offsets */
+const header = document.querySelector('.site-header');
+function setHeaderVar(){
+  if (!header) return;
+  const h = header.getBoundingClientRect().height;
+  document.documentElement.style.setProperty('--header-h', `${Math.round(h)}px`);
+}
+setHeaderVar();
+window.addEventListener('resize', setHeaderVar);
+
+/* Smooth scrolling with header offset (prevents sections being hidden) */
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
     const id = a.getAttribute('href');
+    if (!id || id === '#') return;
     const el = document.querySelector(id);
-    if (el) {
-      e.preventDefault();
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      if (nav.getAttribute('data-open') === 'true') {
-        nav.setAttribute('data-open', 'false');
-        toggle.setAttribute('aria-expanded', 'false');
-      }
-    }
+    if (!el) return;
+    e.preventDefault();
+    const headerH = header ? header.getBoundingClientRect().height : 0;
+    const y = el.getBoundingClientRect().top + window.scrollY - headerH - 12;
+    window.scrollTo({ top: y, behavior: 'smooth' });
   });
 });
 
-/* Countdown (zeigt Tage/Std/Min bis zur Trauung) */
-const cd = document.querySelector('.countdown');
-if (cd) {
-  const targetISO = cd.getAttribute('data-target');
-  const target = targetISO ? new Date(targetISO) : null;
+/* Blur background when scrolling UP */
+let lastY = window.scrollY;
+let ticking = false;
+function onScrollDir(){
+  const y = window.scrollY;
+  const up = y < lastY;
+  document.body.classList.toggle('scrolling-up', up);
+  lastY = y;
+  ticking = false;
+}
+window.addEventListener('scroll', () => {
+  if (!ticking){
+    window.requestAnimationFrame(onScrollDir);
+    ticking = true;
+  }
+}, { passive: true });
 
-  const tick = () => {
-    if (!target) return;
-    const diff = target - new Date();
-    if (diff <= 0) {
-      cd.textContent = 'Heute wird gefeiert!';
-      return;
+/* Hero background blur while scrolling out of view
+   - updates CSS variable --hero-blur on :root
+   - uses a requestAnimationFrame loop on scroll for performance
+*/
+const hero = document.querySelector('.hero');
+if (hero){
+  let heroTick = false;
+  function updateHeroBlur(){
+    const rect = hero.getBoundingClientRect();
+    // progress: 0 = hero top is at/above viewport top; 1 = hero fully scrolled past
+    const progress = Math.min(Math.max(0, -rect.top / rect.height), 1);
+    // max blur in px
+    const maxBlur = 12;
+    const blur = (progress * maxBlur).toFixed(2) + 'px';
+    document.documentElement.style.setProperty('--hero-blur', blur);
+    heroTick = false;
+  }
+  window.addEventListener('scroll', () => {
+    if (!heroTick){
+      window.requestAnimationFrame(updateHeroBlur);
+      heroTick = true;
     }
-    const min = 60 * 1000;
-    const hr = 60 * min;
-    const day = 24 * hr;
+  }, { passive: true });
+  // update on load/resize so initial state is correct
+  window.addEventListener('resize', () => {
+    updateHeroBlur();
+  });
+  updateHeroBlur();
+}
 
+/* Date morph: fade/scale hero date into header date when scrolling down */
+const heroDate = document.getElementById('hero-date');
+const headerDate = document.getElementById('header-date');
+if (heroDate && headerDate){
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      // When hero date leaves the top (scrolling down), show header date
+      if (entry.isIntersecting){
+        headerDate.classList.remove('is-visible');
+      } else {
+        headerDate.classList.add('is-visible');
+      }
+    });
+  }, { rootMargin: `-${header.getBoundingClientRect().height + 8}px 0px 0px 0px`, threshold: 0 });
+  io.observe(heroDate);
+}
+
+/* Countdown */
+const cd = document.querySelector('.countdown');
+if (cd && cd.dataset.target){
+  const target = new Date(cd.dataset.target).getTime();
+  const min = 60 * 1000;
+  const hr = 60 * min;
+  const day = 24 * hr;
+  const tick = () => {
+    const now = Date.now();
+    let diff = Math.max(0, target - now);
     const d = Math.floor(diff / day);
     const h = Math.floor((diff % day) / hr);
     const m = Math.floor((diff % hr) / min);
-
     cd.querySelector('.dd').textContent = d.toString().padStart(2, '0');
     cd.querySelector('.hh').textContent = h.toString().padStart(2, '0');
     cd.querySelector('.mm').textContent = m.toString().padStart(2, '0');
   };
-
   tick();
   setInterval(tick, 30 * 1000);
 }
