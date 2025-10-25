@@ -56,21 +56,34 @@ window.addEventListener('scroll', () => {
   }
 }, { passive: true });
 
-/* Hero background blur while scrolling out of view
-   - updates CSS variable --hero-blur on :root
-   - uses a requestAnimationFrame loop on scroll for performance
+/* Hero effects: blur and parallax while scrolling
+   - updates CSS variables for blur and parallax transforms
+   - uses requestAnimationFrame for performance
 */
 const hero = document.querySelector('.hero');
 if (hero){
   let heroTick = false;
-  function updateHeroBlur(){
+  function updateHeroEffects(){
     const rect = hero.getBoundingClientRect();
-    // progress: 0 = hero top is at/above viewport top; 1 = hero fully scrolled past
-    const progress = Math.min(Math.max(0, -rect.top / rect.height), 1);
-    // max blur in px
+    const scrollY = window.scrollY;
+    const viewportHeight = window.innerHeight;
+
+    // Blur effect (0 = at top, 1 = scrolled past)
+    const blurProgress = Math.min(Math.max(0, -rect.top / rect.height), 1);
     const maxBlur = 12;
-    const blur = (progress * maxBlur).toFixed(2) + 'px';
+    const blur = (blurProgress * maxBlur).toFixed(2) + 'px';
+    
+    // Parallax effects
+    // Background moves slower (0.3x) than scroll speed
+    const bgOffset = Math.min(scrollY * 0.3, rect.height * 0.3);
+    // Numbers move at 0.15x scroll speed (even slower than bg)
+    const numsOffset = Math.min(scrollY * 0.15, rect.height * 0.15);
+    
+    // Apply all effects
     document.documentElement.style.setProperty('--hero-blur', blur);
+    document.documentElement.style.setProperty('--parallax-bg', `${bgOffset}px`);
+    document.documentElement.style.setProperty('--parallax-nums', `${-numsOffset}px`);
+    
     heroTick = false;
   }
 
@@ -96,15 +109,15 @@ if (hero){
 
   window.addEventListener('scroll', () => {
     if (!heroTick){
-      window.requestAnimationFrame(updateHeroBlur);
+      window.requestAnimationFrame(updateHeroEffects);
       heroTick = true;
     }
   }, { passive: true });
   // update on load/resize so initial state is correct
   window.addEventListener('resize', () => {
-    updateHeroBlur();
+    updateHeroEffects();
   });
-  updateHeroBlur();
+  updateHeroEffects();
 }
 
 /* Date morph: fade/scale hero date into header date when scrolling down */

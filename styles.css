@@ -68,14 +68,15 @@ body {
   display: grid; place-items: center; text-align: center;
 }
 
-/* background layer for hero image; blur is controlled via --hero-blur */
+/* background layer for hero image; blur and parallax controlled via CSS vars */
 .hero::before{
   content: "";
   position: absolute; inset: 0; z-index: 0;
   background: #111 url("assets/hero.jpeg") center/cover no-repeat;
   filter: blur(var(--hero-blur));
-  transform: scale(1.04); /* avoid visible edges when blur increases */
+  transform: scale(1.04) translateY(var(--parallax-bg, 0px)); /* parallax + scale for blur edges */
   will-change: filter, transform;
+  transition: transform 0.1s ease-out;
 }
 
 .hero__overlay{
@@ -98,6 +99,9 @@ body {
 .date-stack{
   position: relative; display: grid; place-items: center;
   margin: 1rem auto 0; line-height: .9;
+  transform: translateY(var(--parallax-nums, 0px));
+  will-change: transform;
+  transition: transform 0.1s ease-out;
 }
 .date-stack .num{
   font-family: "Playfair Display", serif;
