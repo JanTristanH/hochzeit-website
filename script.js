@@ -52,7 +52,8 @@ function setHeaderVar(){
   document.documentElement.style.setProperty('--header-h', `${Math.round(h)}px`);
 }
 setHeaderVar();
-window.addEventListener('resize', setHeaderVar);
+window.addEventListener('load', setHeaderVar);   // ensure after fonts/layout
+window.addEventListener('resize', setHeaderVar); // keep CSS var fresh
 
 /* ===========================
    Smooth in-page scrolling
@@ -92,42 +93,33 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 /* ===========================
-   Hero: Blur + Parallax
-   (start on first pixel)
+   Hero: Linear Blur + Parallax
+   (robust on mobile, starts on first pixel)
    =========================== */
 const hero = document.querySelector('.hero');
 
 if (hero){
   let heroTick = false;
 
-  // Remember the hero's initial top so progress grows immediately on scroll,
-  // regardless of sticky header or hero starting offset.
-  let heroTopAtLoad = hero.getBoundingClientRect().top;
+  // Baseline scroll position at load; progress uses distance scrolled from here.
+  let startY = Math.max(window.scrollY, 0);
 
   function updateHeroEffects(){
     const rect = hero.getBoundingClientRect();
     const heroH = rect.height;
 
-    // Distance the hero moved since load (px). >0 as soon as you scroll 1px.
-    const delta = heroTopAtLoad - rect.top;
+    // Distance scrolled since load; clamp to [0, heroH] for a 0..1 progress
+    const deltaY = Math.max(window.scrollY - startY, 0);
+    const progress = Math.min(deltaY / heroH, 1);  // 0..1 linear
 
-    // 0..1 progress based on delta, not viewport top.
-    const progress = Math.min(Math.max(delta / heroH, 0), 1);
-
-    // ---- Blur: starts immediately with a tiny base ----
+    // ---- Linear blur (no easing, starts immediately) ----
     const maxBlur = 12;
-    const minBlurOnScroll = 1.2;      // small initial blur once scrolling begins
-    const eased = Math.pow(progress, 0.75); // front-loaded ramp
-    const hasScrolled = delta > 0;
+    const blurValue = progress * maxBlur;
 
-    const blurValue = hasScrolled
-      ? (minBlurOnScroll + eased * (maxBlur - minBlurOnScroll))
-      : 0;
-
-    // ---- Parallax (now also starts on first pixel) ----
-    // Background moves down slowly, foreground (entire hero content) moves up slightly.
-    const bgOffset = 0.30 * heroH * eased;   // +
-    const fgOffset = -0.15 * heroH * eased;  // -
+    // ---- Parallax (linear to match blur) ----
+    // Background down, foreground (hero__inner) slightly up
+    const bgOffset = 0.30 * heroH * progress;   // +
+    const fgOffset = -0.15 * heroH * progress;  // -
 
     // Reduced motion
     const prefersReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -143,38 +135,9 @@ if (hero){
     heroTick = false;
   }
 
-  // Recalculate starting top on layout changes (e.g., fonts, header size).
-  const recalcStart = () => {
-    heroTopAtLoad = hero.getBoundingClientRect().top;
-    updateHeroEffects();
-  };
-  window.addEventListener('resize', recalcStart);
-  window.addEventListener('load', recalcStart);
-
-  // Intersection observers for header date reveal
-  const heroNums = hero.querySelectorAll('.num');
-  const headerDateParts = document.querySelectorAll('.date-revealed-with-maxblur');
-
-  heroNums.forEach((num, index) => {
-    const io = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        headerDateParts.forEach(part => {
-          if (part.dataset.index === String(index)) {
-            if (!entry.isIntersecting) {
-              part.classList.add('is-visible');
-            } else {
-              part.classList.remove('is-visible');
-            }
-          }
-        });
-      });
-    }, {
-      threshold: 0.075,            // ~7.5% visible triggers
-      rootMargin: '-10% 0px -10% 0px'
-    });
-
-    io.observe(num);
-  });
+  // IMPORTANT: do NOT reset startY on resize (mobile URL bar collapse = resize).
+  // Only reset on full reload/navigation.
+  window.addEventListener('pageshow', () => { startY = Math.max(window.scrollY, 0); });
 
   // Scroll loop (rAF throttled)
   window.addEventListener('scroll', () => {
