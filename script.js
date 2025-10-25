@@ -87,25 +87,33 @@ if (hero){
     heroTick = false;
   }
 
-  const headerDateSpan = document.querySelector('.date-revealed-with-maxblur');
-  const lastNum = document.querySelector('#hero-date .num:last-child');
+  // Setup intersection observers for each number in the hero
+  const heroNums = hero.querySelectorAll('.num');
+  const headerDateParts = document.querySelectorAll('.date-revealed-with-maxblur');
 
-  if (headerDateSpan && lastNum) {
-    const ioDate = new IntersectionObserver(entries => {
+  // Create observers for each number in the hero
+  heroNums.forEach((num, index) => {
+    // Each number reveals its corresponding group in the header (by data-index)
+    const io = new IntersectionObserver(entries => {
       entries.forEach(entry => {
-        // When "26" leaves the viewport, show the header date
-        if (!entry.isIntersecting) {
-          headerDateSpan.classList.add('is-visible');
-        } else {
-          headerDateSpan.classList.remove('is-visible');
-        }
+        // Find all parts with matching index
+        headerDateParts.forEach(part => {
+          if (part.dataset.index === String(index)) {
+            if (!entry.isIntersecting) {
+              part.classList.add('is-visible');
+            } else {
+              part.classList.remove('is-visible');
+            }
+          }
+        });
       });
     }, {
-      threshold: 0.05, // trigger when ~5% visible
+      threshold: 0.15, // trigger when 15% visible
+      rootMargin: '-10% 0px -10% 0px' // slightly tighter observation window
     });
 
-    ioDate.observe(lastNum);
-  }
+    io.observe(num);
+  });
 
   window.addEventListener('scroll', () => {
     if (!heroTick){
