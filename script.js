@@ -65,27 +65,44 @@ if (hero){
   let heroTick = false;
   function updateHeroEffects(){
     const rect = hero.getBoundingClientRect();
-    const scrollY = window.scrollY;
-    const viewportHeight = window.innerHeight;
+    const heroH = rect.height;
 
-    // Blur effect (0 = at top, 1 = scrolled past)
-    const blurProgress = Math.min(Math.max(0, -rect.top / rect.height), 1);
-    const maxBlur = 12;
-    const blur = (blurProgress * maxBlur).toFixed(2) + 'px';
-    
-    // Parallax effects
-    // Background moves slower (0.3x) than scroll speed
-    const bgOffset = Math.min(scrollY * 0.3, rect.height * 0.3);
-    // Numbers move at 0.15x scroll speed (even slower than bg)
-    const numsOffset = Math.min(scrollY * 0.15, rect.height * 0.15);
-    
-    // Apply all effects
-    document.documentElement.style.setProperty('--hero-blur', blur);
-    document.documentElement.style.setProperty('--parallax-bg', `${bgOffset}px`);
-    document.documentElement.style.setProperty('--parallax-nums', `${-numsOffset}px`);
-    
+    // 0..1 progress based on how far the hero has moved past the top
+    const progress = Math.min(Math.max(0, -rect.top / heroH), 1);
+
+    // ---- Blur: start immediately on first pixel of scroll ----
+    const maxBlur = 12;           // your original cap
+    const minBlurOnScroll = 1.2;  // tiny blur as soon as scroll begins
+
+    // front-load the ramp a bit so it feels snappier at the beginning
+    const eased = Math.pow(progress, 0.75); // 0.75 -> faster early ramp (1 = linear)
+
+    // Detect "has started scrolling" (down from top)
+    const hasScrolled = window.scrollY > 0 || rect.top < 0;
+
+    // If not scrolled -> 0px; if scrolled -> start at minBlurOnScroll and ramp to max
+    const blurValue = hasScrolled
+      ? (minBlurOnScroll + eased * (maxBlur - minBlurOnScroll))
+      : 0;
+
+    // ---- Parallax offsets (unchanged) ----
+    const bgOffset = 0.30 * heroH * progress;   // + down
+    const fgOffset = -0.15 * heroH * progress;  // - up
+
+    // Reduced motion respect
+    const prefersReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const bg = prefersReduce ? 0 : bgOffset;
+    const fg = prefersReduce ? 0 : fgOffset;
+    const blurPx = prefersReduce ? 0 : blurValue;
+
+    // Apply
+    document.documentElement.style.setProperty('--hero-blur', `${blurPx.toFixed(2)}px`);
+    document.documentElement.style.setProperty('--parallax-bg', `${bg}px`);
+    document.documentElement.style.setProperty('--parallax-fg', `${fg}px`);
+
     heroTick = false;
   }
+
 
   // Setup intersection observers for each number in the hero
   const heroNums = hero.querySelectorAll('.num');
@@ -108,7 +125,7 @@ if (hero){
         });
       });
     }, {
-      threshold: 0.15, // trigger when 15% visible
+      threshold: 0.075, // trigger when 15% visible
       rootMargin: '-10% 0px -10% 0px' // slightly tighter observation window
     });
 
@@ -126,23 +143,6 @@ if (hero){
     updateHeroEffects();
   });
   updateHeroEffects();
-}
-
-/* Date morph: fade/scale hero date into header date when scrolling down */
-const heroDate = document.getElementById('hero-date');
-const headerDate = document.getElementById('header-date');
-if (heroDate && headerDate){
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      // When hero date leaves the top (scrolling down), show header date
-      if (entry.isIntersecting){
-        headerDate.classList.remove('is-visible');
-      } else {
-        headerDate.classList.add('is-visible');
-      }
-    });
-  }, { rootMargin: `-${header.getBoundingClientRect().height + 8}px 0px 0px 0px`, threshold: 0 });
-  io.observe(heroDate);
 }
 
 /* Countdown */

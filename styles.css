@@ -76,7 +76,6 @@ body {
   filter: blur(var(--hero-blur));
   transform: scale(1.04) translateY(var(--parallax-bg, 0px)); /* parallax + scale for blur edges */
   will-change: filter, transform;
-  transition: transform 0.1s ease-out;
 }
 
 .hero__overlay{
@@ -99,9 +98,13 @@ body {
 .date-stack{
   position: relative; display: grid; place-items: center;
   margin: 1rem auto 0; line-height: .9;
-  transform: translateY(var(--parallax-nums, 0px));
+  /* keine eigene Parallax-Transform mehr */
+  transform: none;
+  will-change: transform; /* kannst du auch ganz weglassen */
+}
+.hero__inner {
+  transform: translateY(var(--parallax-fg, 0px));
   will-change: transform;
-  transition: transform 0.1s ease-out;
 }
 .date-stack .num{
   font-family: "Playfair Display", serif;
