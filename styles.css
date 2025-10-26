@@ -258,3 +258,15 @@ summary{ cursor: pointer; font-weight: 600; }
     --ring-angle: 90deg;
   }
 }
+
+/* Make RSVP translation match the header date style */
+#rsvp h2 .date-part{
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 600;
+  letter-spacing: .08em;
+  font-size: 1rem;        /* same visual size as header brand/date */
+  line-height: 1;
+  color: var(--ink);
+  margin-left: .5ch;      /* a little breathing room after “RSVP” */
+  vertical-align: baseline;
+}
