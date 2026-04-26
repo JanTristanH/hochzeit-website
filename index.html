@@ -77,11 +77,12 @@
         <h3>Dresscode</h3>
         <p>Sommerlich schick. Wenn ihr noch Inspirationen sucht, könnt ihr euch gerne an folgenden Farben orientieren:</p>
         <div class="dresscode-swatches" aria-label="Dresscode Farben">
-          <span class="swatch" style="--swatch-color:#F9F9F2" title="#F9F9F2"></span>
-          <span class="swatch" style="--swatch-color:#BCC6B3" title="#BCC6B3"></span>
-          <span class="swatch" style="--swatch-color:#C5D3DE" title="#C5D3DE"></span>
-          <span class="swatch" style="--swatch-color:#D5ADAB" title="#D5ADAB"></span>
+          <button class="swatch" type="button" style="--swatch-color:#CDDFC7" data-color="#CDDFC7" data-color-name="Hellgrün" aria-label="Hellgrün" aria-pressed="false"></button>
+          <button class="swatch" type="button" style="--swatch-color:#BCC6B3" data-color="#BCC6B3" data-color-name="Salbeigrün" aria-label="Salbeigrün" aria-pressed="false"></button>
+          <button class="swatch" type="button" style="--swatch-color:#C5D3DE" data-color="#C5D3DE" data-color-name="Hellblau" aria-label="Hellblau" aria-pressed="false"></button>
+          <button class="swatch" type="button" style="--swatch-color:#D5ADAB" data-color="#D5ADAB" data-color-name="Rosé" aria-label="Rosé" aria-pressed="false"></button>
         </div>
+        <p id="dresscode-selected-color" class="dresscode-selected-color" aria-live="polite" hidden></p>
       </div>
     </section>
 
@@ -144,10 +145,10 @@
       </div>
       <div class="actions actions--push">
         <button id="onesignal-subscribe-btn" class="btn btn--outline" type="button">
-          Benachrichtigungen aktivieren
+          🔔 Benachrichtigungen aktivieren
         </button>
         <button id="onesignal-unsubscribe-btn" class="btn btn--ghost btn--quiet" type="button" hidden aria-hidden="true">
-          Benachrichtigungen deaktivieren
+          🔕 Benachrichtigungen deaktivieren
         </button>
       </div>
       <p id="onesignal-subscribe-status" class="push-status" aria-live="polite"></p>

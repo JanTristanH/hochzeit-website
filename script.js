@@ -56,6 +56,58 @@ window.addEventListener('load', setHeaderVar);   // ensure after fonts/layout
 window.addEventListener('resize', setHeaderVar); // keep CSS var fresh
 
 /* ===========================
+   Dresscode Color Picker
+   =========================== */
+const dresscodeSwatches = document.querySelectorAll('.dresscode-swatches .swatch');
+const dresscodeSelectedColor = document.getElementById('dresscode-selected-color');
+
+if (dresscodeSwatches.length > 0 && dresscodeSelectedColor) {
+  const defaultCream = getComputedStyle(document.documentElement).getPropertyValue('--dresscode-1').trim() || '#F9F9F2';
+
+  function clearDresscodeSelection() {
+    dresscodeSwatches.forEach((swatch) => {
+      swatch.classList.remove('is-selected');
+      swatch.setAttribute('aria-pressed', 'false');
+    });
+
+    document.documentElement.style.setProperty('--cream', defaultCream);
+    dresscodeSelectedColor.textContent = '';
+    dresscodeSelectedColor.hidden = true;
+  }
+
+  function applyDresscodeSelection(activeSwatch) {
+    const color = activeSwatch.dataset.color;
+    const colorName = activeSwatch.dataset.colorName;
+
+    if (!color || !colorName) return;
+
+    dresscodeSwatches.forEach((swatch) => {
+      const isActive = swatch === activeSwatch;
+      swatch.classList.toggle('is-selected', isActive);
+      swatch.setAttribute('aria-pressed', String(isActive));
+    });
+
+    document.documentElement.style.setProperty('--cream', color);
+    dresscodeSelectedColor.textContent = `Ausgewählte Farbe: ${colorName}`;
+    dresscodeSelectedColor.hidden = false;
+  }
+
+  clearDresscodeSelection();
+
+  dresscodeSwatches.forEach((swatch) => {
+    swatch.addEventListener('click', () => {
+      const isActive = swatch.getAttribute('aria-pressed') === 'true';
+      if (isActive) {
+        clearDresscodeSelection();
+        return;
+      }
+
+      applyDresscodeSelection(swatch);
+    });
+  });
+}
+
+/* ===========================
    Smooth in-page scrolling
    (offset by sticky header)
    =========================== */
@@ -234,13 +286,16 @@ const pushUnsubscribeBtn = document.getElementById('onesignal-unsubscribe-btn');
 const pushSubscribeStatus = document.getElementById('onesignal-subscribe-status');
 
 if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
-  const BUTTON_TEXT_DEFAULT = 'Benachrichtigungen aktivieren';
+  const BUTTON_TEXT_DEFAULT = '🔔 Benachrichtigungen aktivieren';
   const BUTTON_TEXT_LOADING = 'Aktiviere Benachrichtigungen...';
   const BUTTON_TEXT_DONE = 'Benachrichtigungen aktiviert';
-  const BUTTON_UNSUBSCRIBE_DEFAULT = 'Benachrichtigungen deaktivieren';
-  const BUTTON_UNSUBSCRIBE_LOADING = 'Deaktiviere...';
+  const BUTTON_UNSUBSCRIBE_DEFAULT = '🔕 Benachrichtigungen deaktivieren';
 
   let isRequestPending = false;
+
+  function shouldShowPushUnsubscribe(label) {
+    return label === BUTTON_TEXT_DONE;
+  }
 
   function setPushStatus(message, state = '') {
     pushSubscribeStatus.textContent = message;
@@ -255,6 +310,11 @@ if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
     pushSubscribeBtn.textContent = label;
     pushSubscribeBtn.disabled = disabled;
     pushSubscribeBtn.setAttribute('aria-disabled', String(disabled));
+
+    const isUnsubscribeVisible = shouldShowPushUnsubscribe(label);
+    setPushSubscribeVisibility(!isUnsubscribeVisible);
+    setPushUnsubscribeVisibility(isUnsubscribeVisible);
+    setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: true });
   }
 
   function setPushUnsubscribeButtonState({ label = BUTTON_UNSUBSCRIBE_DEFAULT, disabled = true }) {
@@ -268,10 +328,13 @@ if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
     pushUnsubscribeBtn.setAttribute('aria-hidden', String(!isVisible));
   }
 
+  function setPushSubscribeVisibility(isVisible) {
+    pushSubscribeBtn.hidden = !isVisible;
+    pushSubscribeBtn.setAttribute('aria-hidden', String(!isVisible));
+  }
+
   function setPushUnavailableState(message) {
     setPushButtonState({ label: BUTTON_TEXT_DEFAULT, disabled: true });
-    setPushUnsubscribeVisibility(false);
-    setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: true });
     setPushStatus(message, 'error');
   }
 
@@ -282,15 +345,12 @@ if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
 
       if (isOptedIn) {
         setPushButtonState({ label: BUTTON_TEXT_DONE, disabled: true });
-        setPushUnsubscribeVisibility(true);
         setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: false });
         setPushStatus('Benachrichtigungen sind bereits aktiviert.', 'success');
         return;
       }
 
       setPushButtonState({ label: BUTTON_TEXT_DEFAULT, disabled: false });
-      setPushUnsubscribeVisibility(false);
-      setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: true });
 
       if (permission === 'denied') {
         setPushStatus('Benachrichtigungen sind im Browser blockiert.', 'error');
@@ -329,8 +389,6 @@ if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
       isRequestPending = true;
 
       setPushButtonState({ label: BUTTON_TEXT_LOADING, disabled: true });
-      setPushUnsubscribeVisibility(false);
-      setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: true });
       setPushStatus('', '');
 
       try {
@@ -355,8 +413,6 @@ if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
       isRequestPending = true;
 
       setPushButtonState({ label: BUTTON_TEXT_DEFAULT, disabled: true });
-      setPushUnsubscribeVisibility(true);
-      setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_LOADING, disabled: true });
       setPushStatus('', '');
 
       try {
