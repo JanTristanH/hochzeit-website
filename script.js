@@ -293,10 +293,6 @@ if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
 
   let isRequestPending = false;
 
-  function shouldShowPushUnsubscribe(label) {
-    return label === BUTTON_TEXT_DONE;
-  }
-
   function setPushStatus(message, state = '') {
     pushSubscribeStatus.textContent = message;
     if (state) {
@@ -310,17 +306,12 @@ if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
     pushSubscribeBtn.textContent = label;
     pushSubscribeBtn.disabled = disabled;
     pushSubscribeBtn.setAttribute('aria-disabled', String(disabled));
-
-    const isUnsubscribeVisible = shouldShowPushUnsubscribe(label);
-    setPushSubscribeVisibility(!isUnsubscribeVisible);
-    setPushUnsubscribeVisibility(isUnsubscribeVisible);
   }
 
   function setPushUnsubscribeButtonState({ label = BUTTON_UNSUBSCRIBE_DEFAULT, disabled = true }) {
     pushUnsubscribeBtn.textContent = label;
     pushUnsubscribeBtn.disabled = disabled;
     pushUnsubscribeBtn.setAttribute('aria-disabled', String(disabled));
-    setPushUnsubscribeVisibility(!disabled);
   }
 
   function setPushUnsubscribeVisibility(isVisible) {
@@ -335,6 +326,9 @@ if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
 
   function setPushUnavailableState(message) {
     setPushButtonState({ label: BUTTON_TEXT_DEFAULT, disabled: true });
+    setPushSubscribeVisibility(true);
+    setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: true });
+    setPushUnsubscribeVisibility(false);
     setPushStatus(message, 'error');
   }
 
@@ -344,12 +338,17 @@ if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
       const isOptedIn = Boolean(OneSignal?.User?.PushSubscription?.optedIn);
 
       if (isOptedIn) {
+        setPushSubscribeVisibility(false);
+        setPushUnsubscribeVisibility(true);
         setPushButtonState({ label: BUTTON_TEXT_DONE, disabled: true });
         setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: false });
         setPushStatus('Benachrichtigungen sind bereits aktiviert.', 'success');
         return;
       }
 
+      setPushSubscribeVisibility(true);
+      setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: true });
+      setPushUnsubscribeVisibility(false);
       setPushButtonState({ label: BUTTON_TEXT_DEFAULT, disabled: false });
 
       if (permission === 'denied') {
@@ -378,6 +377,8 @@ if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
     }
 
     const syncPushUi = buildPushUiSync(OneSignal);
+    setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: true });
+    setPushUnsubscribeVisibility(false);
     syncPushUi();
 
     if (typeof pushSubscription.addEventListener === 'function') {
