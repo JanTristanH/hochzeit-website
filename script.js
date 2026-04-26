@@ -314,13 +314,13 @@ if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
     const isUnsubscribeVisible = shouldShowPushUnsubscribe(label);
     setPushSubscribeVisibility(!isUnsubscribeVisible);
     setPushUnsubscribeVisibility(isUnsubscribeVisible);
-    setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: true });
   }
 
   function setPushUnsubscribeButtonState({ label = BUTTON_UNSUBSCRIBE_DEFAULT, disabled = true }) {
     pushUnsubscribeBtn.textContent = label;
     pushUnsubscribeBtn.disabled = disabled;
     pushUnsubscribeBtn.setAttribute('aria-disabled', String(disabled));
+    setPushUnsubscribeVisibility(!disabled);
   }
 
   function setPushUnsubscribeVisibility(isVisible) {
