@@ -58,6 +58,23 @@ body {
 .btn--outline{ border-color: var(--ink); color: var(--ink); background: transparent; }
 .btn--outline:hover{ background: var(--ink); color: var(--paper); }
 .btn--ghost{ background: transparent; color: var(--ink); }
+.btn:disabled{
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+#rsvp .actions--push{
+  margin-top: .8rem;
+}
+
+.push-status{
+  margin: .5rem 0 0;
+  min-height: 1.2em;
+  font-size: .92rem;
+  color: var(--muted);
+}
+.push-status[data-state="success"]{ color: #2e6a3e; }
+.push-status[data-state="error"]{ color: #8f2d2d; }
 
 /* Hero mit Zahlensatz & Skript */
 .hero{

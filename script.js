@@ -226,6 +226,109 @@ if (cd && cd.dataset.target) {
   setInterval(tick, 30 * 1000);
 }
 
+/* ===========================
+   OneSignal Subscribe Button
+   =========================== */
+const pushSubscribeBtn = document.getElementById('onesignal-subscribe-btn');
+const pushSubscribeStatus = document.getElementById('onesignal-subscribe-status');
+
+if (pushSubscribeBtn && pushSubscribeStatus) {
+  const BUTTON_TEXT_DEFAULT = 'Benachrichtigungen aktivieren';
+  const BUTTON_TEXT_LOADING = 'Aktiviere Benachrichtigungen...';
+  const BUTTON_TEXT_DONE = 'Benachrichtigungen aktiviert';
+
+  let isRequestPending = false;
+
+  function setPushStatus(message, state = '') {
+    pushSubscribeStatus.textContent = message;
+    if (state) {
+      pushSubscribeStatus.dataset.state = state;
+    } else {
+      delete pushSubscribeStatus.dataset.state;
+    }
+  }
+
+  function setPushButtonState({ label = BUTTON_TEXT_DEFAULT, disabled = false }) {
+    pushSubscribeBtn.textContent = label;
+    pushSubscribeBtn.disabled = disabled;
+    pushSubscribeBtn.setAttribute('aria-disabled', String(disabled));
+  }
+
+  function setPushUnavailableState(message) {
+    setPushButtonState({ label: BUTTON_TEXT_DEFAULT, disabled: true });
+    setPushStatus(message, 'error');
+  }
+
+  function buildPushUiSync(OneSignal) {
+    return function syncPushUi() {
+      const permission = Notification.permission;
+      const isOptedIn = Boolean(OneSignal?.User?.PushSubscription?.optedIn);
+
+      if (isOptedIn) {
+        setPushButtonState({ label: BUTTON_TEXT_DONE, disabled: true });
+        setPushStatus('Benachrichtigungen sind bereits aktiviert.', 'success');
+        return;
+      }
+
+      setPushButtonState({ label: BUTTON_TEXT_DEFAULT, disabled: false });
+
+      if (permission === 'denied') {
+        setPushStatus('Benachrichtigungen sind im Browser blockiert.', 'error');
+        return;
+      }
+
+      setPushStatus('Tippe auf den Button, um Hochzeits-Updates zu erhalten.', 'info');
+    };
+  }
+
+  async function initPushSubscribeController(OneSignal) {
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+      setPushUnavailableState('Benachrichtigungen werden von diesem Browser nicht unterstützt.');
+      return;
+    }
+
+    const requestPermission = OneSignal?.Notifications?.requestPermission;
+    const pushSubscription = OneSignal?.User?.PushSubscription;
+
+    if (typeof requestPermission !== 'function' || !pushSubscription) {
+      setPushUnavailableState('Benachrichtigungen sind aktuell nicht verfügbar.');
+      return;
+    }
+
+    const syncPushUi = buildPushUiSync(OneSignal);
+    syncPushUi();
+
+    if (typeof pushSubscription.addEventListener === 'function') {
+      pushSubscription.addEventListener('change', syncPushUi);
+    }
+
+    pushSubscribeBtn.addEventListener('click', async () => {
+      if (isRequestPending) return;
+      isRequestPending = true;
+
+      setPushButtonState({ label: BUTTON_TEXT_LOADING, disabled: true });
+      setPushStatus('', '');
+
+      try {
+        await requestPermission.call(OneSignal.Notifications);
+        syncPushUi();
+      } catch (error) {
+        setPushButtonState({ label: BUTTON_TEXT_DEFAULT, disabled: false });
+        setPushStatus('Aktivierung fehlgeschlagen. Bitte versuche es erneut.', 'error');
+        console.error('OneSignal subscribe failed:', error);
+      } finally {
+        isRequestPending = false;
+      }
+    });
+  }
+
+  if (Array.isArray(window.OneSignalDeferred)) {
+    window.OneSignalDeferred.push(initPushSubscribeController);
+  } else {
+    setPushUnavailableState('Benachrichtigungen sind aktuell nicht verfügbar.');
+  }
+}
+
 
 
 // Intersection observers for header date reveal

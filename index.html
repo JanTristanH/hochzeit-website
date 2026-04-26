@@ -17,6 +17,16 @@
   <meta property="og:type" content="website" />
   <meta property="og:image" content="https://hochzeit.heisecke.org/assets/hero.jpeg" />
   <link rel="icon" href="assets/favicon.png" />
+
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "5e7bbdca-20d7-46d2-9e22-07a82178915a",
+      });
+    });
+  </script>
 </head>
 <body>
     <header class="site-header">
@@ -118,6 +128,12 @@
       <div class="actions">
         <a class="btn btn--primary" href="https://wa.me/+491712729448">Per&nbsp;WhatsApp zusagen</a>
       </div>
+      <div class="actions actions--push">
+        <button id="onesignal-subscribe-btn" class="btn btn--outline" type="button">
+          Benachrichtigungen aktivieren
+        </button>
+      </div>
+      <p id="onesignal-subscribe-status" class="push-status" aria-live="polite"></p>
       <p></p>
       <div class="countdown" data-target="2026-09-19T14:00:00">Noch <span class="dd">—</span>T <span class="hh">—</span>Std <span class="mm">—</span>Min</div>
     </section>
