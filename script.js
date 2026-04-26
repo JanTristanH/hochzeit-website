@@ -230,12 +230,15 @@ if (cd && cd.dataset.target) {
    OneSignal Subscribe Button
    =========================== */
 const pushSubscribeBtn = document.getElementById('onesignal-subscribe-btn');
+const pushUnsubscribeBtn = document.getElementById('onesignal-unsubscribe-btn');
 const pushSubscribeStatus = document.getElementById('onesignal-subscribe-status');
 
-if (pushSubscribeBtn && pushSubscribeStatus) {
+if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
   const BUTTON_TEXT_DEFAULT = 'Benachrichtigungen aktivieren';
   const BUTTON_TEXT_LOADING = 'Aktiviere Benachrichtigungen...';
   const BUTTON_TEXT_DONE = 'Benachrichtigungen aktiviert';
+  const BUTTON_UNSUBSCRIBE_DEFAULT = 'Benachrichtigungen deaktivieren';
+  const BUTTON_UNSUBSCRIBE_LOADING = 'Deaktiviere...';
 
   let isRequestPending = false;
 
@@ -254,8 +257,21 @@ if (pushSubscribeBtn && pushSubscribeStatus) {
     pushSubscribeBtn.setAttribute('aria-disabled', String(disabled));
   }
 
+  function setPushUnsubscribeButtonState({ label = BUTTON_UNSUBSCRIBE_DEFAULT, disabled = true }) {
+    pushUnsubscribeBtn.textContent = label;
+    pushUnsubscribeBtn.disabled = disabled;
+    pushUnsubscribeBtn.setAttribute('aria-disabled', String(disabled));
+  }
+
+  function setPushUnsubscribeVisibility(isVisible) {
+    pushUnsubscribeBtn.hidden = !isVisible;
+    pushUnsubscribeBtn.setAttribute('aria-hidden', String(!isVisible));
+  }
+
   function setPushUnavailableState(message) {
     setPushButtonState({ label: BUTTON_TEXT_DEFAULT, disabled: true });
+    setPushUnsubscribeVisibility(false);
+    setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: true });
     setPushStatus(message, 'error');
   }
 
@@ -266,11 +282,15 @@ if (pushSubscribeBtn && pushSubscribeStatus) {
 
       if (isOptedIn) {
         setPushButtonState({ label: BUTTON_TEXT_DONE, disabled: true });
+        setPushUnsubscribeVisibility(true);
+        setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: false });
         setPushStatus('Benachrichtigungen sind bereits aktiviert.', 'success');
         return;
       }
 
       setPushButtonState({ label: BUTTON_TEXT_DEFAULT, disabled: false });
+      setPushUnsubscribeVisibility(false);
+      setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: true });
 
       if (permission === 'denied') {
         setPushStatus('Benachrichtigungen sind im Browser blockiert.', 'error');
@@ -289,6 +309,8 @@ if (pushSubscribeBtn && pushSubscribeStatus) {
 
     const requestPermission = OneSignal?.Notifications?.requestPermission;
     const pushSubscription = OneSignal?.User?.PushSubscription;
+    const optIn = pushSubscription?.optIn;
+    const optOut = pushSubscription?.optOut;
 
     if (typeof requestPermission !== 'function' || !pushSubscription) {
       setPushUnavailableState('Benachrichtigungen sind aktuell nicht verfügbar.');
@@ -307,15 +329,44 @@ if (pushSubscribeBtn && pushSubscribeStatus) {
       isRequestPending = true;
 
       setPushButtonState({ label: BUTTON_TEXT_LOADING, disabled: true });
+      setPushUnsubscribeVisibility(false);
+      setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: true });
       setPushStatus('', '');
 
       try {
-        await requestPermission.call(OneSignal.Notifications);
+        if (typeof optIn === 'function') {
+          await optIn.call(pushSubscription);
+        } else {
+          await requestPermission.call(OneSignal.Notifications);
+        }
         syncPushUi();
       } catch (error) {
         setPushButtonState({ label: BUTTON_TEXT_DEFAULT, disabled: false });
+        setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: true });
         setPushStatus('Aktivierung fehlgeschlagen. Bitte versuche es erneut.', 'error');
         console.error('OneSignal subscribe failed:', error);
+      } finally {
+        isRequestPending = false;
+      }
+    });
+
+    pushUnsubscribeBtn.addEventListener('click', async () => {
+      if (isRequestPending || typeof optOut !== 'function') return;
+      isRequestPending = true;
+
+      setPushButtonState({ label: BUTTON_TEXT_DEFAULT, disabled: true });
+      setPushUnsubscribeVisibility(true);
+      setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_LOADING, disabled: true });
+      setPushStatus('', '');
+
+      try {
+        await optOut.call(pushSubscription);
+        syncPushUi();
+        setPushStatus('Benachrichtigungen wurden deaktiviert.', 'info');
+      } catch (error) {
+        syncPushUi();
+        setPushStatus('Deaktivierung fehlgeschlagen. Bitte versuche es erneut.', 'error');
+        console.error('OneSignal unsubscribe failed:', error);
       } finally {
         isRequestPending = false;
       }

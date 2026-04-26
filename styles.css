@@ -58,6 +58,18 @@ body {
 .btn--outline{ border-color: var(--ink); color: var(--ink); background: transparent; }
 .btn--outline:hover{ background: var(--ink); color: var(--paper); }
 .btn--ghost{ background: transparent; color: var(--ink); }
+.btn--quiet{
+  padding: .25rem .2rem;
+  border: 0;
+  border-radius: 0;
+  color: var(--muted);
+  font-size: .88rem;
+  font-weight: 600;
+}
+.btn--quiet:hover{
+  text-decoration: underline;
+  color: var(--ink);
+}
 .btn:disabled{
   opacity: .55;
   cursor: not-allowed;
@@ -65,6 +77,10 @@ body {
 
 #rsvp .actions--push{
   margin-top: .8rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .9rem;
 }
 
 .push-status{
