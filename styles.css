@@ -93,10 +93,17 @@ body {
   margin: .5rem 0 0;
   min-height: 1.2em;
   font-size: .92rem;
+  font-weight: 600;
   color: var(--muted);
 }
 .push-status[data-state="success"]{ color: #2e6a3e; }
 .push-status[data-state="error"]{ color: #8f2d2d; }
+.push-browser-hint{
+  margin: .45rem 0 0;
+  max-width: 48rem;
+  font-size: .85rem;
+  color: var(--muted);
+}
 
 /* Hero mit Zahlensatz & Skript */
 .hero{

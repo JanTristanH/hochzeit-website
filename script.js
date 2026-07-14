@@ -288,8 +288,8 @@ const pushSubscribeStatus = document.getElementById('onesignal-subscribe-status'
 if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
   const BUTTON_TEXT_DEFAULT = '🔔 Benachrichtigungen aktivieren';
   const BUTTON_TEXT_LOADING = 'Aktiviere Benachrichtigungen...';
-  const BUTTON_TEXT_DONE = 'Benachrichtigungen aktiviert';
   const BUTTON_UNSUBSCRIBE_DEFAULT = '🔕 Benachrichtigungen deaktivieren';
+  const BUTTON_UNSUBSCRIBE_LOADING = 'Deaktiviere Benachrichtigungen...';
 
   let isRequestPending = false;
 
@@ -314,21 +314,24 @@ if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
     pushUnsubscribeBtn.setAttribute('aria-disabled', String(disabled));
   }
 
-  function setPushUnsubscribeVisibility(isVisible) {
-    pushUnsubscribeBtn.hidden = !isVisible;
-    pushUnsubscribeBtn.setAttribute('aria-hidden', String(!isVisible));
-  }
+  function setPushAction(action, { disabled = false, label } = {}) {
+    const showSubscribe = action === 'subscribe';
+    pushSubscribeBtn.hidden = !showSubscribe;
+    pushSubscribeBtn.setAttribute('aria-hidden', String(!showSubscribe));
+    pushUnsubscribeBtn.hidden = showSubscribe;
+    pushUnsubscribeBtn.setAttribute('aria-hidden', String(showSubscribe));
 
-  function setPushSubscribeVisibility(isVisible) {
-    pushSubscribeBtn.hidden = !isVisible;
-    pushSubscribeBtn.setAttribute('aria-hidden', String(!isVisible));
+    if (showSubscribe) {
+      setPushButtonState({ label: label || BUTTON_TEXT_DEFAULT, disabled });
+      setPushUnsubscribeButtonState({ disabled: true });
+    } else {
+      setPushButtonState({ disabled: true });
+      setPushUnsubscribeButtonState({ label: label || BUTTON_UNSUBSCRIBE_DEFAULT, disabled });
+    }
   }
 
   function setPushUnavailableState(message) {
-    setPushButtonState({ label: BUTTON_TEXT_DEFAULT, disabled: true });
-    setPushSubscribeVisibility(true);
-    setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: true });
-    setPushUnsubscribeVisibility(false);
+    setPushAction('subscribe', { disabled: true });
     setPushStatus(message, 'error');
   }
 
@@ -338,31 +341,25 @@ if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
       const isOptedIn = Boolean(OneSignal?.User?.PushSubscription?.optedIn);
 
       if (isOptedIn) {
-        setPushSubscribeVisibility(false);
-        setPushUnsubscribeVisibility(true);
-        setPushButtonState({ label: BUTTON_TEXT_DONE, disabled: true });
-        setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: false });
-        setPushStatus('Benachrichtigungen sind bereits aktiviert.', 'success');
+        setPushAction('unsubscribe');
+        setPushStatus('Status: Benachrichtigungen sind aktiviert.', 'success');
         return;
       }
 
-      setPushSubscribeVisibility(true);
-      setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: true });
-      setPushUnsubscribeVisibility(false);
-      setPushButtonState({ label: BUTTON_TEXT_DEFAULT, disabled: false });
+      setPushAction('subscribe');
 
       if (permission === 'denied') {
-        setPushStatus('Benachrichtigungen sind im Browser blockiert.', 'error');
+        setPushStatus('Status: Benachrichtigungen sind im Browser blockiert.', 'error');
         return;
       }
 
-      setPushStatus('Tippe auf den Button, um Hochzeits-Updates zu erhalten.', 'info');
+      setPushStatus('Status: Benachrichtigungen sind deaktiviert.', 'info');
     };
   }
 
   async function initPushSubscribeController(OneSignal) {
     if (!('Notification' in window) || !('serviceWorker' in navigator)) {
-      setPushUnavailableState('Benachrichtigungen werden von diesem Browser nicht unterstützt.');
+      setPushUnavailableState('Status: Benachrichtigungen werden von diesem Browser nicht unterstützt.');
       return;
     }
 
@@ -372,13 +369,11 @@ if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
     const optOut = pushSubscription?.optOut;
 
     if (typeof requestPermission !== 'function' || !pushSubscription) {
-      setPushUnavailableState('Benachrichtigungen sind aktuell nicht verfügbar.');
+      setPushUnavailableState('Status: Benachrichtigungen sind aktuell nicht verfügbar.');
       return;
     }
 
     const syncPushUi = buildPushUiSync(OneSignal);
-    setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: true });
-    setPushUnsubscribeVisibility(false);
     syncPushUi();
 
     if (typeof pushSubscription.addEventListener === 'function') {
@@ -389,8 +384,8 @@ if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
       if (isRequestPending) return;
       isRequestPending = true;
 
-      setPushButtonState({ label: BUTTON_TEXT_LOADING, disabled: true });
-      setPushStatus('', '');
+      setPushAction('subscribe', { label: BUTTON_TEXT_LOADING, disabled: true });
+      setPushStatus('Status: Benachrichtigungen werden aktiviert …', 'info');
 
       try {
         if (typeof optIn === 'function') {
@@ -400,9 +395,8 @@ if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
         }
         syncPushUi();
       } catch (error) {
-        setPushButtonState({ label: BUTTON_TEXT_DEFAULT, disabled: false });
-        setPushUnsubscribeButtonState({ label: BUTTON_UNSUBSCRIBE_DEFAULT, disabled: true });
-        setPushStatus('Aktivierung fehlgeschlagen. Bitte versuche es erneut.', 'error');
+        setPushAction('subscribe');
+        setPushStatus('Status: Aktivierung fehlgeschlagen. Bitte versuche es erneut.', 'error');
         console.error('OneSignal subscribe failed:', error);
       } finally {
         isRequestPending = false;
@@ -413,16 +407,16 @@ if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
       if (isRequestPending || typeof optOut !== 'function') return;
       isRequestPending = true;
 
-      setPushButtonState({ label: BUTTON_TEXT_DEFAULT, disabled: true });
-      setPushStatus('', '');
+      setPushAction('unsubscribe', { label: BUTTON_UNSUBSCRIBE_LOADING, disabled: true });
+      setPushStatus('Status: Benachrichtigungen werden deaktiviert …', 'info');
 
       try {
         await optOut.call(pushSubscription);
         syncPushUi();
-        setPushStatus('Benachrichtigungen wurden deaktiviert.', 'info');
+        setPushStatus('Status: Benachrichtigungen sind deaktiviert.', 'info');
       } catch (error) {
         syncPushUi();
-        setPushStatus('Deaktivierung fehlgeschlagen. Bitte versuche es erneut.', 'error');
+        setPushStatus('Status: Deaktivierung fehlgeschlagen. Bitte versuche es erneut.', 'error');
         console.error('OneSignal unsubscribe failed:', error);
       } finally {
         isRequestPending = false;
@@ -433,7 +427,7 @@ if (pushSubscribeBtn && pushUnsubscribeBtn && pushSubscribeStatus) {
   if (Array.isArray(window.OneSignalDeferred)) {
     window.OneSignalDeferred.push(initPushSubscribeController);
   } else {
-    setPushUnavailableState('Benachrichtigungen sind aktuell nicht verfügbar.');
+    setPushUnavailableState('Status: Benachrichtigungen sind aktuell nicht verfügbar.');
   }
 }
 
